@@ -28,6 +28,7 @@ code = np.array([["a", ".-"],
 ["y", "-.--"],
 ["z", "--.."]])
 
+sav = np.array([["",""],["",""]])
 
 def decode(sentence):
     final_sentence = ""
@@ -50,18 +51,44 @@ def encode(sentence):
         final_sentence += "   "
     print(str(final_sentence))
 
+def save(id,sentence):
+    global sav
+    id_save = "#"+id
+    sentence = " ".join(sentence)
+    new_sav = [id_save,sentence]
 
+    sav_copy = []
+    sav_copy = sav[:,0]
+    result = np.where(sav_copy == id_save)
+    if(len(result[0])!=1):
+        sav = np.vstack([sav, new_sav])
+        print("saved as "+str(id_save))
 
 def action(line):
     global continuer
     line=line.split(" ")
+    sav_copy = []
+    sav_copy = sav[:,0]
+
     if(len(line) > 0):
         if(line[0] == "stop"):
             continuer=False
         elif(line[0] == "decode" and len(line) > 1):
-            decode(line[1:])
+            if(line[1][0]=="#"):
+                result = np.where(sav_copy == line[1])
+                if(len(result[0])==1):
+                    decode(sav[result[0][0]][1].split(" "))
+            else:
+                decode(line[1:])
         elif(line[0] == "encode" and len(line) > 1):
-            encode(line[1:])
+            if(line[1][0]=="#"):
+                result = np.where(sav_copy == line[1])
+                if(len(result[0])==1):
+                    encode(sav[result[0][0]][1].split(" "))
+            else:
+                encode(line[1:])
+        elif(line[0] == "save" and len(line) > 2):
+            save(line[1],line[2:])
     print()
 
 print("\033[0;37;41m#####      Morse-Tool      #####")

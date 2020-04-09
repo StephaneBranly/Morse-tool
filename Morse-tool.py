@@ -1,4 +1,6 @@
 import numpy as np
+from playsound import playsound
+import time
  
 continuer = True
 code = np.array([["a", ".-"],
@@ -64,6 +66,17 @@ def save(id,sentence):
         sav = np.vstack([sav, new_sav])
         print("saved as "+str(id_save))
 
+def emit(sentence):
+    for letter in sentence:
+        for c in letter:
+            if(c=="."):
+                playsound("bip.mp3")
+                time.sleep(.100)
+            elif(c=="-"):
+                playsound("biiip.mp3")
+                time.sleep(.300)
+        time.sleep(.200)
+
 def action(line):
     global continuer
     line=line.split(" ")
@@ -74,14 +87,14 @@ def action(line):
         if(line[0] == "stop"):
             continuer=False
         elif(line[0] == "decode" and len(line) > 1):
-            if(line[1][0]=="#"):
+            if(len(line[1])>0 and line[1][0]=="#"):
                 result = np.where(sav_copy == line[1])
                 if(len(result[0])==1):
                     decode(sav[result[0][0]][1].split(" "))
             else:
                 decode(line[1:])
         elif(line[0] == "encode" and len(line) > 1):
-            if(line[1][0]=="#"):
+            if(len(line[1])>0 and line[1][0]=="#"):
                 result = np.where(sav_copy == line[1])
                 if(len(result[0])==1):
                     encode(sav[result[0][0]][1].split(" "))
@@ -89,6 +102,13 @@ def action(line):
                 encode(line[1:])
         elif(line[0] == "save" and len(line) > 2):
             save(line[1],line[2:])
+        elif(line[0] == "emit" and len(line) > 1):
+            if(len(line[1])>0 and line[1][0]=="#"):
+                result = np.where(sav_copy == line[1])
+                if(len(result[0])==1):
+                    emit(sav[result[0][0]][1].split(" "))
+            else:
+                emit(line[1:])
     print()
 
 print("\033[0;37;41m#####      Morse-Tool      #####")
@@ -99,7 +119,8 @@ print("Python 3.6.2")
 print("")
 print("\033[0;37;41m#####                       #####")
 print("\033[0;37;48m")
-
+playsound('bip.mp3')
+playsound('biiip.mp3')
 while(continuer):
     line=input("> ")
     action(line)

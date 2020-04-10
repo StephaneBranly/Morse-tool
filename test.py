@@ -7,7 +7,7 @@ print("Start run")
 
 
 CHANNELS = 1
-RATE = 2000
+RATE = 10000
 
 p = pyaudio.PyAudio()
 fulldata = np.array([])

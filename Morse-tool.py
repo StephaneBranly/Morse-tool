@@ -1,7 +1,11 @@
 import numpy as np
 from playsound import playsound
+import speech_recognition as s_r
 import time
- 
+
+r = s_r.Recognizer()
+my_mic = s_r.Microphone(device_index=1)
+
 continuer = True
 code = np.array([["a", ".-"],
 ["b", "-..."],
@@ -31,8 +35,10 @@ code = np.array([["a", ".-"],
 ["z", "--.."]])
 
 sav = np.array([["",""],["",""]])
+final_sentence = ""
 
 def decode(sentence):
+    global final_sentence
     final_sentence = ""
     code_copy = []
     code_copy = code[:,1]
@@ -45,8 +51,10 @@ def decode(sentence):
     print(str(final_sentence))
     
 def encode(sentence):
+    global final_sentence
     final_sentence = ""
     for word in sentence:
+        word=word.lower()
         for letter in word:
             if(ord(letter)-97 >= 0 and ord(letter)-97 <= 25):
                 final_sentence += str(code[ord(letter)-97][1])+" "
@@ -86,27 +94,58 @@ def action(line):
     if(len(line) > 0):
         if(line[0] == "stop"):
             continuer=False
+        if(line[0] == "help"):
+            print("> encode latin sentence")
+            print("> decode morse sentence")
+            print("> emit morse sentence")
+            print("> save name sentence")
+            print("sentence could be write, or you can use saved sentence with #name, the last with #last, sentence from microphone with #mic")
         elif(line[0] == "decode" and len(line) > 1):
             if(len(line[1])>0 and line[1][0]=="#"):
-                result = np.where(sav_copy == line[1])
-                if(len(result[0])==1):
-                    decode(sav[result[0][0]][1].split(" "))
+                if(line[1]=="#mic"):
+                    with my_mic as source:
+                        print("I listen")
+                        r.adjust_for_ambient_noise(source)
+                        audio = r.listen(source)
+                    print(audio)
+                    print(sentence)
+                    encode(sentence.split(" "))
+                elif(line[1]=="#last"):
+                    decode(final_sentence.split(" "))
+                else:
+                    result = np.where(sav_copy == line[1])
+                    if(len(result[0])==1):
+                        decode(sav[result[0][0]][1].split(" "))
             else:
                 decode(line[1:])
         elif(line[0] == "encode" and len(line) > 1):
             if(len(line[1])>0 and line[1][0]=="#"):
-                result = np.where(sav_copy == line[1])
-                if(len(result[0])==1):
-                    encode(sav[result[0][0]][1].split(" "))
+                if(line[1]=="#mic"):
+                    with my_mic as source:
+                        print("I listen")
+                        r.adjust_for_ambient_noise(source)
+                        audio = r.listen(source)
+                    sentence = r.recognize_google(audio)
+                    print(sentence)
+                    encode(sentence.split(" "))
+                elif(line[1]=="#last"):
+                    encode(final_sentence.split(" "))
+                else:
+                    result = np.where(sav_copy == line[1])
+                    if(len(result[0])==1):
+                        encode(sav[result[0][0]][1].split(" "))
             else:
                 encode(line[1:])
         elif(line[0] == "save" and len(line) > 2):
             save(line[1],line[2:])
         elif(line[0] == "emit" and len(line) > 1):
             if(len(line[1])>0 and line[1][0]=="#"):
-                result = np.where(sav_copy == line[1])
-                if(len(result[0])==1):
-                    emit(sav[result[0][0]][1].split(" "))
+                if(line[1]=="#last"):
+                    emit(final_sentence.split(" "))
+                else:
+                    result = np.where(sav_copy == line[1])
+                    if(len(result[0])==1):
+                        emit(sav[result[0][0]][1].split(" "))
             else:
                 emit(line[1:])
     print()
@@ -121,6 +160,7 @@ print("\033[0;37;41m#####                       #####")
 print("\033[0;37;48m")
 playsound('bip.mp3')
 playsound('biiip.mp3')
+print("write help to know the commands")
 while(continuer):
     line=input("> ")
     action(line)

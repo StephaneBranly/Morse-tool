@@ -7,7 +7,7 @@ print("Start run")
 
 
 CHANNELS = 1
-RATE = 44000
+RATE = 48000
 
 p = pyaudio.PyAudio()
 fulldata = np.array([])
@@ -18,7 +18,7 @@ def main():
     stream = p.open(format=pyaudio.paFloat32,
                     channels=CHANNELS,
                     rate=RATE,
-                    output=True,
+                    output=False,
                     input=True,
                     stream_callback=callback)
 
@@ -44,6 +44,8 @@ def main():
     last_state = 0
     size_cut = 100
     i = 0
+    min_dur = RATE*15
+    max_dur = 0
     for x in fulldata:
         if(i == size_cut):
             average = somme/size_cut
@@ -57,6 +59,10 @@ def main():
                 somme_state = 0
             elif(last_state == 1 and average < 0.1):
                 result.append([1, somme_state])
+                if(somme_state < min_dur):
+                    min_dur = somme_state
+                if(somme_state > max_dur):
+                    max_dur = somme_state
                 last_state = 0
                 somme_state = 1
         somme = somme+abs(x)
@@ -76,7 +82,19 @@ def main():
     plt.title("mic")
     plt.show()
 
+    print("min :"+str(min_dur))
+    print("max :"+str(max_dur))
+    middle = (min_dur+max_dur)/2
+    final_signal = ""
+    for z in result:
+        if(z[0] == 0 and z[1] > middle):
+            final_signal = final_signal+" "
+        elif(z[0] == 1 and z[1] < middle):
+            final_signal = final_signal+"."
+        elif(z[0] == 1 and z[1] > middle):
+            final_signal = final_signal+"-"
     print(str(result))
+    print(final_signal)
 
     print("End")
     p.terminate()

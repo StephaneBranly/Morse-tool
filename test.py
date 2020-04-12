@@ -7,7 +7,7 @@ print("Start run")
 
 
 CHANNELS = 1
-RATE = 10000
+RATE = 44000
 
 p = pyaudio.PyAudio()
 fulldata = np.array([])
@@ -29,24 +29,56 @@ def main():
         stream.stop_stream()
     stream.close()
     print("mic closed")
+    print(fulldata)
+    print("traitement en cours")
+    result = []
+    result2 = []
+
+    retraitement = []
+    retraitement2 = []
+
+    average_tab = []
+    average = 0
+    somme = 0
+    somme_state = 0
+    last_state = 0
+    size_cut = 100
+    i = 0
+    for x in fulldata:
+        if(i == size_cut):
+            average = somme/size_cut
+            for z in range(0, size_cut):
+                average_tab.append(average)
+            somme = 0
+            i = 0
+            if (last_state == 0 and average > 0.1):
+                result.append([0, somme_state])
+                last_state = 1
+                somme_state = 0
+            elif(last_state == 1 and average < 0.1):
+                result.append([1, somme_state])
+                last_state = 0
+                somme_state = 1
+        somme = somme+abs(x)
+        i = i+1
+        somme_state = somme_state+1
+
+    for z in result:
+        for x in range(0, z[1]):
+            result2.append(z[0])
 
     numpydata = np.hstack(fulldata)
-    numpydata_abs = abs(numpydata)
-    numpydata_bi = np.array([])
-    for x in numpydata_abs:
-        if x > 0.2:
-            numpydata_bi = np.append(numpydata_bi, 1)
-        else:
-            numpydata_bi = np.append(numpydata_bi, 0)
-
+    numpydata_bi = np.hstack(result2)
+    numpydata_avr = np.hstack(average_tab)
     plt.plot(numpydata)
-    plt.plot(numpydata_abs)
     plt.plot(numpydata_bi)
+    plt.plot(numpydata_avr)
     plt.title("mic")
     plt.show()
 
-    print("End")
+    print(str(result))
 
+    print("End")
     p.terminate()
 
 

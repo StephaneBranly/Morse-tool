@@ -102,7 +102,15 @@ def action(line):
             print("sentence could be write, or you can use saved sentence with #name, the last with #last, sentence from microphone with #mic")
         elif(line[0] == "decode" and len(line) > 1):
             if(len(line[1])>0 and line[1][0]=="#"):
-                if(line[1]=="#last"):
+                if(line[1]=="#mic"):
+                    with my_mic as source:
+                        print("I listen")
+                        r.adjust_for_ambient_noise(source)
+                        audio = r.listen(source)
+                    print(audio)
+                    print(sentence)
+                    encode(sentence.split(" "))
+                elif(line[1]=="#last"):
                     decode(final_sentence.split(" "))
                 else:
                     result = np.where(sav_copy == line[1])

@@ -3,7 +3,6 @@ import time
 import numpy as np
 from matplotlib import pyplot as plt
 import scipy.signal as signal
-print("Start run")
 
 
 CHANNELS = 1
@@ -11,7 +10,6 @@ RATE = 48000
 
 p = pyaudio.PyAudio()
 fulldata = np.array([])
-dry_data = np.array([])
 
 
 def main():
@@ -21,16 +19,15 @@ def main():
                     output=False,
                     input=True,
                     stream_callback=callback)
-
+    print("I listen")
     stream.start_stream()
 
     while stream.is_active():
         time.sleep(15)
         stream.stop_stream()
     stream.close()
-    print("mic closed")
+    print("Finished.")
     print(fulldata)
-    print("traitement en cours")
     result = []
     result2 = []
 
@@ -79,11 +76,9 @@ def main():
     plt.plot(numpydata)
     plt.plot(numpydata_bi)
     plt.plot(numpydata_avr)
-    plt.title("mic")
+    plt.title("Mic view")
     plt.show()
 
-    print("min :"+str(min_dur))
-    print("max :"+str(max_dur))
     middle = (min_dur+max_dur)/2
     final_signal = ""
     for z in result:
@@ -95,16 +90,12 @@ def main():
             final_signal = final_signal+"-"
     print(str(result))
     print(final_signal)
-
-    print("End")
     p.terminate()
 
 
 def callback(in_data, frame_count, time_info, flag):
-    global b, a, fulldata, dry_data, frames
+    global b, a, fulldata, frames
     audio_data = np.fromstring(in_data, dtype=np.float32)
-    dry_data = np.append(dry_data, audio_data)
-    # do processing here
     fulldata = np.append(fulldata, audio_data)
     return (audio_data, pyaudio.paContinue)
 

@@ -83,7 +83,7 @@ def main():
     final_signal = ""
     for z in result:
         if(z[0] == 0 and z[1] > 2*middle):
-            final_sentence = final_sentence+"  "
+            final_signal = final_signal+"  "
         elif(z[0] == 0 and z[1] > middle):
             final_signal = final_signal+" "
         elif(z[0] == 1 and z[1] < middle):
@@ -93,6 +93,18 @@ def main():
     print(str(result))
     print(final_signal)
     p.terminate()
+
+    fichier = open("datas.csv", "w")
+    for x in numpydata:
+        fichier.write(str(x)+";")
+    fichier.write("\n")
+    for x in numpydata_bi:
+        fichier.write(str(x)+";")
+    fichier.write("\n")
+    for x in numpydata_avr:
+        fichier.write(str(x)+";")
+    fichier.write("\n")
+    fichier.close()
 
 
 def callback(in_data, frame_count, time_info, flag):

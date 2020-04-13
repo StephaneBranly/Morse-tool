@@ -82,7 +82,9 @@ def main():
     middle = (min_dur+max_dur)/2
     final_signal = ""
     for z in result:
-        if(z[0] == 0 and z[1] > middle):
+        if(z[0] == 0 and z[1] > 2*middle):
+            final_sentence = final_sentence+"  "
+        elif(z[0] == 0 and z[1] > middle):
             final_signal = final_signal+" "
         elif(z[0] == 1 and z[1] < middle):
             final_signal = final_signal+"."

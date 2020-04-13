@@ -12,6 +12,7 @@ RATE = 48000
 p = pyaudio.PyAudio()
 fulldata = np.array([])
 
+
 continuer = True
 code = np.array([["a", ".-"],
 ["b", "-..."],
@@ -81,7 +82,8 @@ def save(id,sentence):
         print("saved as "+str(id_save))
 
 def listen_morse(time_record):
-    global final_sentence
+    global final_sentence, fulldata
+    fulldata = np.array([])
     stream = p.open(format=pyaudio.paFloat32,
                     channels=CHANNELS,
                     rate=RATE,
@@ -132,7 +134,9 @@ def listen_morse(time_record):
     middle = (min_dur+max_dur)/2
     final_sentence = ""
     for z in result:
-        if(z[0] == 0 and z[1] > middle):
+        if(z[0] == 0 and z[1] > 2*middle):
+            final_sentence = final_sentence+"  "
+        elif(z[0] == 0 and z[1] > middle):
             final_sentence = final_sentence+" "
         elif(z[0] == 1 and z[1] < middle):
             final_sentence = final_sentence+"."

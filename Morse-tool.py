@@ -1,3 +1,17 @@
+# ************************************************************************************************************************* #
+#   UTC Header                                                                                                              #
+#                                                         ::::::::::::::::::::       :::    ::: :::::::::::  ::::::::       #
+#      Morse-tool.py                                      ::::::::::::::::::::       :+:    :+:     :+:     :+:    :+:      #
+#                                                         ::::::::::::::+++#####+++  +:+    +:+     +:+     +:+             #
+#      By: branlyst <stephane.branly@etu.utc.fr>          ::+++##############+++     +:+    +:+     +:+     +:+             #
+#      https://github.com/StephaneBranly              +++##############+++::::       +#+    +:+     +#+     +#+             #
+#                                                       +++##+++::::::::::::::       +#+    +:+     +#+     +#+             #
+#                                                         ::::::::::::::::::::       +#+    +#+     +#+     +#+             #
+#                                                         ::::::::::::::::::::       #+#    #+#     #+#     #+#    #+#      #
+#      Update: 2021/06/01 12:08:06 by branlyst            ::::::::::::::::::::        ########      ###      ######## .fr   #
+#                                                                                                                           #
+# ************************************************************************************************************************* #
+
 import numpy as np
 from playsound import playsound
 import speech_recognition as s_r
@@ -7,6 +21,8 @@ r = s_r.Recognizer()
 my_mic = s_r.Microphone(device_index=1)
 
 continuer = True
+
+# Tableau de correspondance alphabet / Code Morse
 code = np.array([["a", ".-"],
 ["b", "-..."],
 ["c", "-.-."],
@@ -37,30 +53,33 @@ code = np.array([["a", ".-"],
 sav = np.array([["",""],["",""]])
 final_sentence = ""
 
+# Fonction de decodage de message code en morse
 def decode(sentence):
     global final_sentence
     final_sentence = ""
     code_copy = []
-    code_copy = code[:,1]
-    for letter in sentence:
-        result = np.where(code_copy == letter)
-        if(len(result[0])==1):
+    code_copy = code[:,1] # selection de la colonne 1, correspondant aux codes morses
+    for letter in sentence: # pour chaque caractere code en morse
+        result = np.where(code_copy == letter) # recherche du caractere dans la table de codes morse
+        if(len(result[0])==1): # si un code morse a ete trouve, on met le caractere alphabetique
             final_sentence += str(code[result[0][0]][0])
-        else:
+        else: # si code non trouvé, on met un espace
             final_sentence += " "
-    print(str(final_sentence))
+    print(str(final_sentence)) # affichage du message decode
     
+# Fonction d'encodage d'un message en alphabet vers un son code morse
 def encode(sentence):
     global final_sentence
     final_sentence = ""
-    for word in sentence:
-        word=word.lower()
-        for letter in word:
-            if(ord(letter)-97 >= 0 and ord(letter)-97 <= 25):
-                final_sentence += str(code[ord(letter)-97][1])+" "
-        final_sentence += "   "
+    for word in sentence: # pour chaque mot dans la phrase
+        word=word.lower() # on met le mot en minuscule
+        for letter in word: # pour chaque lettre du mot
+            if(ord(letter)-97 >= 0 and ord(letter)-97 <= 25): # s'il s'agit d'un lettre entre a et z,
+                final_sentence += str(code[ord(letter)-97][1])+" " # on ajoute le code morse associe (retrouve avec decalage par rappot a la table ascii)
+        final_sentence += "   " # ajout d'espace entre les mots
     print(str(final_sentence))
 
+# systeme de sauvegarde de variables
 def save(id,sentence):
     global sav
     id_save = "#"+id
@@ -74,24 +93,26 @@ def save(id,sentence):
         sav = np.vstack([sav, new_sav])
         print("saved as "+str(id_save))
 
+# Fonction d'emission de message morse en audio
 def emit(sentence):
-    for letter in sentence:
-        for c in letter:
-            if(c=="."):
+    for letter in sentence: # pour chaque lettre du message
+        for c in letter: # pour chaque . et - de la lettre
+            if(c=="."): # si c'est un . , emission du bip
                 playsound("bip.mp3")
                 time.sleep(.100)
-            elif(c=="-"):
+            elif(c=="-"): # si c'est un - , emission du biiip
                 playsound("biiip.mp3")
                 time.sleep(.300)
         time.sleep(.200)
 
+# Execution de fonction
 def action(line):
     global continuer
-    line=line.split(" ")
+    line=line.split(" ") # split de la ligne par espace
     sav_copy = []
     sav_copy = sav[:,0]
 
-    if(len(line) > 0):
+    if(len(line) > 0): # analyse de la commande demandee line[0]
         if(line[0] == "stop"):
             continuer=False
         if(line[0] == "help"):
@@ -161,6 +182,6 @@ print("\033[0;37;48m")
 playsound('bip.mp3')
 playsound('biiip.mp3')
 print("write help to know the commands")
-while(continuer):
+while(continuer): # boucle main
     line=input("> ")
     action(line)
